@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { bookSlug, slugify } from "../lib/book-slug";
 import { findBookId } from "../lib/manuscripts";
 import { toChunks } from "../lib/speech-text";
+import { toLangCode, clampForGoogle, MAX_TRANSLATE_CHARS } from "../lib/tts";
 import bookIndex from "../lib/book-index.json";
 
 describe("book slugs", () => {
@@ -55,5 +56,30 @@ describe("chapter chunking for speech", () => {
 
   it("merges tiny fragments instead of flooding the queue", () => {
     expect(toChunks(["আ। বা।"])).toEqual(["আ। বা।"]);
+  });
+});
+
+describe("Google TTS helpers", () => {
+  it("maps a Bengali label to bn", () => {
+    expect(toLangCode("বাংলা")).toBe("bn");
+    expect(toLangCode("Bangla")).toBe("bn");
+    expect(toLangCode(undefined)).toBe("bn");
+  });
+
+  it("normalises BCP-47 style codes", () => {
+    expect(toLangCode("en")).toBe("en");
+    expect(toLangCode("zh-cn")).toBe("zh-CN");
+    expect(toLangCode("English")).toBe("en");
+  });
+
+  it("clamps text to Google's 200-character limit", () => {
+    const long = "বাংলা ".repeat(120);
+    const clamped = clampForGoogle(long);
+    expect(clamped.length).toBeLessThanOrEqual(MAX_TRANSLATE_CHARS);
+    expect(clamped.length).toBeLessThan(long.length);
+  });
+
+  it("leaves short text untouched", () => {
+    expect(clampForGoogle("দুই লাইন।")).toBe("দুই লাইন।");
   });
 });
