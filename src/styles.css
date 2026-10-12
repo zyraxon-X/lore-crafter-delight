@@ -870,21 +870,6 @@ html {
   width: 96px;
   accent-color: var(--accent, currentColor);
 }
-.listen-voice {
-  font-size: 12px;
-  max-width: 190px;
-  padding: 5px 8px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--card);
-  color: inherit;
-}
-@media (max-width: 640px) {
-  .listen-voice {
-    max-width: 100%;
-    flex: 1 1 100%;
-  }
-}
 .listen-progress {
   font-size: 12px;
   color: var(--muted-foreground);
