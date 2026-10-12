@@ -23,20 +23,22 @@ import { formatNumber, useLanguage } from "@/lib/i18n";
 import { downloadHtml, downloadTxt, printBook } from "@/lib/export-book";
 import { toLibraryBook } from "@/lib/community-to-book";
 import { fetchCommunityBooks } from "@/lib/community-books.server";
-import { loadBook } from "@/lib/manuscripts";
+import { findBookId, loadBook } from "@/lib/manuscripts";
 
 export const Route = createFileRoute("/books/$bookId")({
   loader: async ({ params }) => {
-    const id = Number(params.bookId);
-    if (Number.isNaN(id)) throw notFound();
+    const segment = decodeURIComponent(params.bookId);
+    const id = findBookId(segment);
 
     let book: Book | undefined;
-    if (id > 0) {
+    if (id !== undefined) {
       book = await loadBook(id);
     } else {
+      // Community books live in the repo, not the bundle, so their slug is
+      // matched against the live submission list.
       const community = await fetchCommunityBooks();
-      const entry = community[-id - 1];
-      book = entry ? toLibraryBook(entry, -id - 1) : undefined;
+      const entry = community.find((item) => item.slug === segment);
+      if (entry) book = toLibraryBook(entry, community.indexOf(entry));
     }
     if (!book) throw notFound();
     return book;
@@ -178,6 +180,7 @@ function Reader() {
               else setListen(false);
             }}
             onStop={() => setListen(false)}
+            language={book.language}
           />
         </div>
       )}

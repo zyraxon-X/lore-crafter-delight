@@ -7,6 +7,8 @@ export type Book = {
   subtitle: string;
   outline: string[];
   chapters: Chapter[];
+  // URL segment for /books/<slug>; community books keep their folder name.
+  slug?: string;
   author?: string;
   description?: string;
   coverUrl?: string;

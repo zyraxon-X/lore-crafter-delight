@@ -11,6 +11,7 @@ export function toLibraryBook(entry: CommunityBook, index: number): Book {
     subtitle: entry.description || `${entry.author} লিখিত কমিউনিটি বই`,
     outline: entry.chapters.map((chapter) => chapter.title),
     chapters: entry.chapters,
+    slug: entry.slug,
     author: entry.author,
     description: entry.description,
     language: entry.language,

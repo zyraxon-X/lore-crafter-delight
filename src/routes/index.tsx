@@ -9,6 +9,7 @@ import { formatNumber, useLanguage } from "@/lib/i18n";
 import { toBookSummary } from "@/lib/community-to-book";
 import { fetchCommunityBooks } from "@/lib/community-books.server";
 import { bookSummaries } from "@/lib/manuscripts";
+import { bookSlug } from "@/lib/book-slug";
 
 export const Route = createFileRoute("/")({
   loader: async () => ({ community: await fetchCommunityBooks() }),
@@ -105,7 +106,7 @@ function Index() {
                 <Link
                   key={book.id}
                   to="/books/$bookId"
-                  params={{ bookId: String(book.id) }}
+                  params={{ bookId: bookSlug(book) }}
                   className={`featured-book featured-${i}`}
                 >
                   <BookCover book={book} priority />
@@ -133,14 +134,14 @@ function Index() {
               {communityBooks.slice(0, 8).map((book) => (
                 <article className="community-card" key={book.id}>
                   <div className="community-art">
-                    <Link to="/books/$bookId" params={{ bookId: String(book.id) }}>
+                    <Link to="/books/$bookId" params={{ bookId: bookSlug(book) }}>
                       <BookCover book={book} />
                     </Link>
                   </div>
                   <span className="genre-label">{book.genre}</span>
                   <Link
                     to="/books/$bookId"
-                    params={{ bookId: String(book.id) }}
+                    params={{ bookId: bookSlug(book) }}
                     className="book-title"
                   >
                     {book.title}
@@ -231,7 +232,7 @@ function Index() {
                 <div className="book-art">
                   <Link
                     to="/books/$bookId"
-                    params={{ bookId: String(book.id) }}
+                    params={{ bookId: bookSlug(book) }}
                     aria-label={`${book.title} ${t("collection.read")}`}
                   >
                     <BookCover book={book} />
@@ -261,7 +262,7 @@ function Index() {
                 </div>
                 <Link
                   to="/books/$bookId"
-                  params={{ bookId: String(book.id) }}
+                  params={{ bookId: bookSlug(book) }}
                   className="book-title"
                 >
                   {book.title}
@@ -274,7 +275,7 @@ function Index() {
                   </span>
                   <Link
                     to="/books/$bookId"
-                    params={{ bookId: String(book.id) }}
+                    params={{ bookId: bookSlug(book) }}
                     aria-label={`${book.title} ${t("collection.read")}`}
                   >
                     <ArrowRight size={16} />
