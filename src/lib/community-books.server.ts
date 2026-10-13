@@ -136,7 +136,8 @@ async function collect(folder: string): Promise<CommunityBook[]> {
 
 // Books fetched from online sources are kept here so they show up instantly,
 // before GitHub's listing (and our cache) picks up the new commit.
-const fresh = new Map<string, CommunityBook>();
+const globalStore = globalThis as { __freshBooks?: Map<string, CommunityBook> };
+const fresh = (globalStore.__freshBooks ??= new Map<string, CommunityBook>());
 
 export function rememberBook(book: CommunityBook): void {
   fresh.set(book.slug, book);

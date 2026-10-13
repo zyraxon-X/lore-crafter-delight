@@ -12,7 +12,7 @@ describe("book slugs", () => {
   });
 
   it("derives a name-slug from the title", () => {
-    const first = bookIndex[0];
+    const first = bookIndex[0]!;
     expect(bookSlug(first)).toBe(slugify(first.title));
   });
 
@@ -21,7 +21,7 @@ describe("book slugs", () => {
   });
 
   it("resolves a title slug back to the numeric id", () => {
-    const first = bookIndex[0];
+    const first = bookIndex[0]!;
     expect(findBookId(bookSlug(first))).toBe(first.id);
   });
 
