@@ -134,7 +134,21 @@ async function collect(folder: string): Promise<CommunityBook[]> {
   return books;
 }
 
+// Books fetched from online sources are kept here so they show up instantly,
+// before GitHub's listing (and our cache) picks up the new commit.
+const fresh = new Map<string, CommunityBook>();
+
+export function rememberBook(book: CommunityBook): void {
+  fresh.set(book.slug, book);
+}
+
 export async function loadCommunityBooks(): Promise<CommunityBook[]> {
+  const books = await loadFromGithub();
+  const seen = new Set(books.map((book) => book.slug));
+  return [...books, ...[...fresh.values()].filter((book) => !seen.has(book.slug))];
+}
+
+async function loadFromGithub(): Promise<CommunityBook[]> {
   if (cache && Date.now() - cache.at < TTL_MS) return cache.books;
 
   try {
