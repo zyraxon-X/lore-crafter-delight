@@ -180,7 +180,7 @@ function Reader() {
               else setListen(false);
             }}
             onStop={() => setListen(false)}
-            language={book.language}
+            {...(book.language ? { language: book.language } : {})}
           />
         </div>
       )}

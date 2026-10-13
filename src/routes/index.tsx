@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, BookOpen, Bookmark, Check, Search, Sparkles, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BookCover } from "@/components/book-cover";
@@ -62,6 +62,43 @@ function Index() {
     Boolean(book),
   );
   const genreTabs = ["all", ...genres];
+
+  // When a search finds nothing here, look the book up online automatically
+  // and bring it into the library, then open it.
+  const navigate = useNavigate();
+  const [online, setOnline] = useState<{ query: string; state: "loading" | "error"; message?: string }>();
+  const query = search.trim();
+  const shouldFetch = view === "collection" && query.length >= 3 && visible.length === 0;
+  useEffect(() => {
+    if (!shouldFetch) {
+      setOnline(undefined);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setOnline({ query, state: "loading" });
+      try {
+        const response = await fetch("/api/fetch-book", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ query }),
+        });
+        const data = (await response.json()) as { ok: boolean; slug?: string; error?: string };
+        if (cancelled) return;
+        if (data.ok && data.slug) {
+          await navigate({ to: "/books/$bookId", params: { bookId: data.slug } });
+        } else {
+          setOnline({ query, state: "error", message: data.error ?? "" });
+        }
+      } catch {
+        if (!cancelled) setOnline({ query, state: "error", message: "" });
+      }
+    }, 1200);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [shouldFetch, query, navigate]);
 
   return (
     <>
@@ -286,10 +323,28 @@ function Index() {
           </div>
           {!visible.length && (
             <div className="empty-library">
-              <BookOpen size={36} />
-              <h3>
-                {view === "saved" ? t("collection.empty.saved") : t("collection.empty.search")}
-              </h3>
+              {online?.state === "loading" ? (
+                <div className="online-search" role="status" aria-live="polite">
+                  <div className="online-orbit" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <h3>{t("online.loading")}</h3>
+                  <p>“{online.query}”</p>
+                </div>
+              ) : (
+                <>
+                  <BookOpen size={36} />
+                  <h3>
+                    {view === "saved"
+                      ? t("collection.empty.saved")
+                      : online?.state === "error"
+                        ? online.message || t("online.notFound")
+                        : t("collection.empty.search")}
+                  </h3>
+                </>
+              )}
               <Button
                 variant="outline"
                 onClick={() => {
