@@ -1,0 +1,17 @@
+name: zyraxon-multiplatform
+on: workflow_dispatch
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "hello from linux" > out.txt && uname -a
+      - uses: actions/upload-artifact@v4
+        with: { name: app-linux, path: out.txt }
+  windows:
+    runs-on: windows-latest
+    steps:
+      - run: echo hello from windows
+  macos:
+    runs-on: macos-latest
+    steps:
+      - run: echo hello from macos
